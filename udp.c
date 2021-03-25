@@ -24,8 +24,8 @@
  *                                  
  * Output parameters: fd -> integer that returns the descriptor file of the server 
  * 
- * Descrição:   Criação de um servidor UDP com o porto especificado à entrada, retornando um file
- *              descriptor.
+ * Description:  Creation of a UDP server with the specified port at the entrance, returning a file
+ *               descriptor.
  ****************************************************************************************************/
 int ServerUDP(int port)
 {
@@ -78,13 +78,13 @@ int ServerUDP(int port)
 /*****************************************************************************************************
  * ClientUDP(char *ip, int port, struct sockaddr_in *addr)
  * 
- * Parâmetros de Entrada:   ip -> IP para o qual o cliente UDP se vai ligar
- *                          port -> porto para o qual o cliente UDP se vai ligar
- *                          addr -> estrutura para manipular endereços de internet
+ * Input parameters:        ip -> IP address which the UDP client does the connection
+ *                          port -> port which the UDP client does the connection
+ *                          addr -> structure for changing internet addresses
  * 
- * Parâmetros de Saída:     int -> retorna 0 se não houver erros, caso contrário retorna -1
+ * Output parameters:       int -> returns 0 if no errors, otherwise returns -1 
  * 
- * Descrição:   Estabelece uma ligação UDP com um servidor, especificado pelos parâmetros à entrada
+ * Description:   Does the UDP connection with a server
  * 
  ****************************************************************************************************/
 int ClientUDP(char *ip, int port, struct sockaddr_in *addr)
@@ -103,8 +103,8 @@ int ClientUDP(char *ip, int port, struct sockaddr_in *addr)
     addr->sin_port = htons(port); /* Convert values between hos and network byte order */
 
 
-    /*  Convert the Internet host address from IPv4 numbers-and-dots notation into
-        binary form (network byte order) */
+    /*  converts the Internet host address from IPv4 notation into
+        binary */
     if (inet_aton(ip, &(addr->sin_addr)) == 0)
     {
         fprintf(stderr,"[UDP CLIENT] Error: IP address is not valid\n\n");
@@ -122,80 +122,76 @@ int ClientUDP(char *ip, int port, struct sockaddr_in *addr)
 }
 
 /********************************************************************************************************
- * EnviarUDP(struct sockaddr_in *addr, int fd, char *request, user_connection *user)
+ * int sendUDP(struct sockaddr_in *addr, int fd, void *request, size_t dim)
  * 
- * Parâmetros de Entrada:   addr -> estrutura para manipular endereços de internet
- *                          fd -> file descriptor a ser utilizado no envio da mensagem por ligação UDP
- *                          request -> mensagem a ser enviada por ligação UDP
- *                          user -> estrutura com parâmetros da aplicação iamroot e sobre as suas
- *                              conexões
+ * Input parameters:        addr -> structure for changing internet addresses
+ *                          fd -> file descriptor used to send the message by udp
+ *                          sendingMessage -> message to send by udp
+ *                         
  * 
- * Parâmetros de Saída:     int num_bytes -> retorna o número de bytes enviados pela ligação UDP
- *                                          estabelecida
- *                          caso contrário retorna -1
+ * Output parameters:     int sentBytes -> returns the number of bytes sent by UDP
+ *                        otherwise, it returns -1
  * 
- * Descrição:   Envia uma mensagem por ligação UDP e retorna o número de bytes enviado. Se falhar,
- *              retorna -1.
+ * Descrição:   This function sends a message by UDP. If it fails, it returns -1 instead of the number 
+ *              of the bytes sent
  * 
  *******************************************************************************************************/
-int EnviarUDP(struct sockaddr_in *addr, int fd, void *request,size_t dimensao, user_connection *user)
+int sendUDP(struct sockaddr_in *addr, int fd, void *sendingMessage, size_t dim)
 {
-    int num_bytes = 0;
-  	/* Função para transmissão de dados para um destino especificado */	
-    num_bytes = sendto(fd, request, dimensao, MSG_CONFIRM, (const struct sockaddr *)addr, (socklen_t) sizeof(const struct sockaddr_in));
+    int sentBytes = 0;
+
+  	/* transimitting data */	
+    sentBytes = sendto(fd, sendingMessage, dim, MSG_CONFIRM, (const struct sockaddr *)addr, (socklen_t) sizeof(const struct sockaddr_in));
     
-    if(num_bytes < 0 )
-    {
-        fprintf(stderr,"ERRO = sendto (EnviarUDP)\n");
-    }
-    if (user->debug)
-    {
-        fprintf(stderr,"[Mensagem UDP Enviada] = %p (%d bytes)\n",request,num_bytes);
-    }
-    return num_bytes;
+    if(sentBytes < 0 )
+        fprintf(stderr,"[UDP] Error: Message not sent \n");
+
+    fprintf(stderr, "UDP Message sent with %d bytes\n", sentBytes);
+   
+    return sentBytes;
 }
 
 /********************************************************************************************************
  * RecvUDP(struct sockaddr_in *addr, int fd, char *message, user_connection *user)
  * 
- * Parâmetros de Entrada:   addr -> estrutura para manipular endereços de internet
- *                          fd -> file descriptor a ser utilizado no envio da mensagem por ligação UDP
- *                          message -> mensagem recebida por ligação UDP
- *                          user -> estrutura com parâmetros da aplicação iamroot e sobre as suas
- *                              conexões
+ * Input parameters:        addr -> structure for changing internet addresses
+ *                          fd -> file descriptor used to send the message by udp
+ *                          recvMessageage -> received message by udp
+ *                         
  * 
- * Parâmetros de Saida:     int nbytes -> retorna o número de bytes recebidos pela ligação UDP
- *                                  estabelecida
- * Descrição:   Recebe uma mensagem por ligação UDP a partir de um dado IP e porto
+ * Output parameters:     int recvBytes -> returns the number of bytes received by UDP
+ *                        otherwise, it returns -1
+ * 
+ * Description:   This function receives a message by UDP
  * 
  *******************************************************************************************************/
-int RecvUDP(struct sockaddr_in *addr, int fd, void *message,int dimensao, user_connection *user)
+int ReceiveUDP(struct sockaddr_in *addr, int fd, void *recvMessage, int dim)
 {
-    int nbytes = 0;
-    char *final=NULL;
+    int recvBytes = 0;
+    char *message = NULL;
     socklen_t addrlen = sizeof(struct sockaddr_in);
 
-    memset(message,0,dimensao);
-    nbytes = recvfrom(fd, message, dimensao, MSG_CONFIRM, (struct sockaddr *) addr, &addrlen);
-    if(nbytes < 0)
+    memset(recvMessage, 0, dim);
+
+    /* receiving data */	
+    recvBytes = recvfrom(fd, recvMessage, dim, MSG_CONFIRM, (struct sockaddr *) addr, &addrlen);
+
+    /* verification of reception*/
+    if(recvBytes < 0)
+        fprintf(stderr,"[UDP] Error: Message not received \n");
+    
+    if (sizeof(struct sockaddr_in) != addrlen)
     {
-        fprintf(stderr,"ERRO = Nao obteve a mensagem (RecvUDP)\n");
-    } 
-    if (sizeof(struct sockaddr_in)!=addrlen)
-    {
-        fprintf(stderr,"Nao corresponde ao mesmo endereco de socket\n");
+        fprintf(stderr,"[UDP] Error: The socket address is not the same \n");
         return -1;
     }
-    if (nbytes == dimensao)
+    if (recvBytes == dim)
     {
-    	final = message;
-    	final[dimensao-1]='\0';
+    	message = recvMessage;
+    	message[dim-1]='\0';
     } 
 
-    if (user->debug)
-    {
-        fprintf(stderr,"Mensagem UDP  com %d bytes recebida\n", nbytes);
-    }
+    fprintf(stderr, "UDP Message received with %d bytes\n", recvBytes);
 
-    return nbytes;
+    return recvBytes;
 }
