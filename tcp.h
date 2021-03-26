@@ -1,5 +1,5 @@
 /***********************************************************************
- * Filename: udp.h
+ * Filename: tcp.h
  * 
  * Authors: Diogo Martins, n.º 93047
  *          Duarte Oliveira, nº94192
@@ -8,31 +8,32 @@
  * 
  * Comments:
  *            
- *                   Functions used in udp.c file
+ *                   Functions used in tcp.c file
  *                  
  ***********************************************************************/
-#ifndef _UDP_H
-#define _UDP_H
+#ifndef _TCP_H
+#define _TCP_H
 
-/* LIBRARIES */
+/* BIBLIOTECAS */
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <time.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netdb.h>
-#include <sys/un.h>
-#include <sys/select.h>
 #include "structs.h"
 
-/* functions prototype */
-int ServerUDP(int port);
-int ClientUDP(char *ip,int port,struct sockaddr_in *addr);
-int SendUDP(struct sockaddr_in *addr, int fd, void *sendingMessage, size_t dim);
-int ReceiveUDP(struct sockaddr_in *addr, int fd, void *recvMessage, int dim);
+
+/* Protótipo de Funcoes */
+int ClientTCP(char *ip, int port);
+int ServerTCP(int port);
+int SendTCP(int fd, char* protocol, int dim);
+int ReceiveTCP(int fd, char *response, int dim);
+int AcceptTCP(int fd, struct sockaddr_in *addr);
 
 
 #endif

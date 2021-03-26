@@ -1,7 +1,7 @@
 /***********************************************************************
- * Name of the file : udp.c
+ * Filename: udp.c
  * 
- * Authors: Diogo Martins, nº93...
+ * Authors: Diogo Martins, nº93047
  *          Duarte Oliveira, nº94192
  * 
  * Last modification: 23-03-2021
@@ -46,7 +46,7 @@ int ServerUDP(int port)
     inputport[9]= '\0';
 
     /* allocates and initializes a list of addrinfo structures for each node */
-    n = getaddrinfo(NULL, port, &hints, &res);
+    n = getaddrinfo(NULL,(int*)port, &hints, &res);
     if(n != 0)
     {
         fprintf(stderr,"[UDP SERVER] ERROR: Socket address not obtained\n");
@@ -122,7 +122,7 @@ int ClientUDP(char *ip, int port, struct sockaddr_in *addr)
 }
 
 /********************************************************************************************************
- * int sendUDP(struct sockaddr_in *addr, int fd, void *request, size_t dim)
+ * SendUDP(struct sockaddr_in *addr, int fd, void *request, size_t dim)
  * 
  * Input parameters:        addr -> structure for changing internet addresses
  *                          fd -> file descriptor used to send the message by udp
@@ -136,7 +136,7 @@ int ClientUDP(char *ip, int port, struct sockaddr_in *addr)
  *              of the bytes sent
  * 
  *******************************************************************************************************/
-int sendUDP(struct sockaddr_in *addr, int fd, void *sendingMessage, size_t dim)
+int SendUDP(struct sockaddr_in *addr, int fd, void *sendingMessage, size_t dim)
 {
     int sentBytes = 0;
 
